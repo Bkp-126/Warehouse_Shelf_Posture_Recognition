@@ -9,12 +9,12 @@ ASSETS = {
     # 你后面会把实际链接填进来（GitHub Release / 网盘直链 / HuggingFace）
     "model": {
         "path": "models/yolo11n-pose.pt",
-        "url": "",
+        "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/yolo11n-pose.pt",
         "desc": "YOLOv11 pose weights",
     },
     "video": {
         "path": "data/video_1.mp4",
-        "url": "",
+        "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/video_1.mp4",
         "desc": "Demo video for quick start",
     },
 }
