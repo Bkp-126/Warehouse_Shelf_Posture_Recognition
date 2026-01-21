@@ -1,29 +1,43 @@
-# --- Python 基础垃圾 ---
+# =========================
+# Python / Cache
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 
-# --- IDE 配置 (不要传你的个人设置) ---
+# =========================
+# Virtual Env
+# =========================
+.venv/
+venv/
+
+# =========================
+# IDE
+# =========================
 .idea/
 .vscode/
 *.swp
 
-# --- 运行产生的垃圾数据 (保留文件夹但忽略内容) ---
-# 忽略 output 下的所有文件
-output/*
-# 但保留 output 文件夹本身和一个空的 .gitkeep (为了让别人知道有这个目录)
+# =========================
+# Runtime Outputs (do not commit)
+# =========================
+output/
 !output/.gitkeep
-# 如果你想保留 report.csv 的表头，可以把下面这行删掉，但通常建议忽略
-output/report.csv
 
-# --- YOLO 自动生成的日志 ---
-runs/
+# 如果你会在输出中生成这些
+*.csv
+*.jpg
+*.png
 
-# --- 虚拟环境 (如果有的话) ---
-venv/
-env/
-aienv/
+# =========================
+# Large Assets (do not commit)
+# =========================
+data/*.mp4
+data/*.avi
+data/*.mov
 
-# --- 操作系统文件 ---
-.DS_Store
-Thumbs.db
+# =========================
+# Model Weights (do not commit)
+# =========================
+models/*.pt
+models/*.onnx
