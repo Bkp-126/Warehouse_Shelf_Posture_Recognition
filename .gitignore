@@ -23,11 +23,8 @@ venv/
 # =========================
 output/
 !output/.gitkeep
-
-# 如果你会在输出中生成这些
-*.csv
-*.jpg
-*.png
+output/images/
+output/report.csv
 
 # =========================
 # Large Assets (do not commit)
