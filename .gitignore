@@ -1,0 +1,29 @@
+# --- Python 基础垃圾 ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- IDE 配置 (不要传你的个人设置) ---
+.idea/
+.vscode/
+*.swp
+
+# --- 运行产生的垃圾数据 (保留文件夹但忽略内容) ---
+# 忽略 output 下的所有文件
+output/*
+# 但保留 output 文件夹本身和一个空的 .gitkeep (为了让别人知道有这个目录)
+!output/.gitkeep
+# 如果你想保留 report.csv 的表头，可以把下面这行删掉，但通常建议忽略
+output/report.csv
+
+# --- YOLO 自动生成的日志 ---
+runs/
+
+# --- 虚拟环境 (如果有的话) ---
+venv/
+env/
+aienv/
+
+# --- 操作系统文件 ---
+.DS_Store
+Thumbs.db
