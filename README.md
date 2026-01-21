@@ -162,5 +162,5 @@ python src/ui/main_window.py
 ---
 
 ## 📄 License
+> 本项目为个人学习与研究用途，素材仅用于演示。
 
-MIT License
