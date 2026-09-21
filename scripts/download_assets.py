@@ -1,69 +1,58 @@
-from __future__ import annotations
-import argparse
+"""Explicit official/resource downloads, checked against the shipped SHA256 manifest."""
+
 from pathlib import Path
-import urllib.request
+import argparse, json, hashlib, urllib.request
 
-# Large files are provided via GitHub Releases (not committed to the repo).
-# - model: weights for inference
-# - sample_video: input video used for quick start
-# - ui_demo: screen-recorded UI demo video (for preview)
-ASSETS = {
-    "model": {
-        "path": "models/yolo11n-pose.pt",
-        "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/yolo11n-pose.pt",
-        "desc": "YOLOv11 pose weights (baseline)",
-    },
-    "sample_video": {
-        "path": "data/video_1.mp4",
-        "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/video_1.mp4",
-        "desc": "Sample input video for quick start",
-    },
-    "ui_demo": {
-        "path": "output/ui_demo.mp4",
-        "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/ui_demo.mp4",
-        "desc": "UI demo video (screen recording)",
-    },
-}
+ROOT = Path(__file__).resolve().parents[1]
 
 
-def download(url: str, dst: Path) -> None:
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    print(f"Downloading -> {dst}")
-    urllib.request.urlretrieve(url, dst)  # nosec
+def sha(path):
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(
-        description="Download large assets (model / sample video / UI demo) from Releases."
-    )
-    p.add_argument("--model", action="store_true", help="Download model weights")
-    p.add_argument("--video", action="store_true", help="Download sample input video (data/video_1.mp4)")
-    p.add_argument("--ui-demo", action="store_true", help="Download UI demo video (output/ui_demo.mp4)")
-    p.add_argument("--all", action="store_true", help="Download all assets")
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--all", action="store_true")
+    p.add_argument("--model", action="store_true")
+    p.add_argument("--video", action="store_true")
+    p.add_argument("--ui-demo", action="store_true")
+    p.add_argument("--model26", action="store_true")
     args = p.parse_args()
-
-    targets: list[str] = []
-    if args.all or (not args.model and not args.video and not args.ui_demo):
-        targets = ["model", "sample_video", "ui_demo"]
-    else:
-        if args.model:
-            targets.append("model")
-        if args.video:
-            targets.append("sample_video")
-        if args.ui_demo:
-            targets.append("ui_demo")
-
-    for key in targets:
-        url = ASSETS[key]["url"]
-        if not url:
-            print(f"[SKIP] {key}: url is empty. Please set it in scripts/download_assets.py")
+    manifest = json.loads((ROOT / "configs/assets.json").read_text(encoding="utf-8"))
+    names = [
+        k for k in ["model", "video", "ui-demo", "model26"] if getattr(args, k.replace("-", "_"))
+    ]
+    if args.all:
+        names = ["model", "video", "ui-demo"]
+    if not names:
+        names = ["model", "video"]
+    for key in names:
+        asset = manifest[key]
+        path = ROOT / asset["path"]
+        if path.exists():
+            if sha(path) != asset["sha256"]:
+                raise ValueError(f"已有文件哈希不同，不覆盖: {path}")
+            print("verified", path)
             continue
-        dst = Path(ASSETS[key]["path"])
-        download(url, dst)
-
-    print("Done.")
-    return 0
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temp = path.with_suffix(path.suffix + ".download")
+        if temp.exists():
+            raise FileExistsError(f"发现未完成下载，请核查后处理: {temp}")
+        try:
+            with urllib.request.urlopen(asset["url"], timeout=60) as response, temp.open("xb") as f:
+                for block in iter(lambda: response.read(1024 * 1024), b""):
+                    f.write(block)
+            if sha(temp) != asset["sha256"]:
+                raise ValueError(f"下载 SHA256 不匹配，保留临时文件供核查: {temp}")
+            temp.replace(path)
+            print("downloaded and verified", path)
+        except Exception as exc:
+            raise RuntimeError(f"{key} 下载失败: {exc}") from exc
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

@@ -1,170 +1,134 @@
-# 🏭 智能仓储行为分析系统  
-**Smart Warehouse Analysis System**
+# 仓储作业姿态分析与辅助提醒
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
-![PySide6](https://img.shields.io/badge/GUI-PySide6-green.svg)
-![YOLO](https://img.shields.io/badge/AI-YOLOv11--Pose-red.svg)
-![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)
+**把仓储录像中的作业动作，整理成可定位、可回放的事件。**
 
-> 面向 **工厂 / 仓储场景** 的 AI 行为分析与安全合规监控系统。  
-> 基于 **YOLOv11 Pose（姿态估计）** 实时识别 **伸手 / 弯腰** 行为，支持 ROI 电子围栏、实时趋势可视化与证据留存（截图 + CSV）。
->
-> 说明：本项目为个人学习与研究用途，素材仅用于演示。
+复盘货架拣选和补货过程时，仅靠观看整段录像，很难同时记录多名人员的动作、持续时间和发生位置。一个弯腰动作是否持续、一次伸手发生在哪个货架区域，都需要反复拖动进度条确认。
 
----
+本项目面向固定机位仓储视频，结合人体姿态估计、人员跟踪和时序规则，逐人记录弯腰候选与伸手作业事件。使用者可以从事件列表直接回到对应片段，核对画面并导出记录，用于作业过程复盘和姿态分析研究。
 
-## 🎬 演示（Demo）
+`YOLO11 Pose` · `ByteTrack` · `PySide6` · `本地视频分析`
 
-### 动图预览（UI 录屏）
-> 将动图放在仓库：`assets/demo.gif`（建议 < 15MB）
+## 动态演示
 
-![demo](assets/demo.gif)
+### 伸手动作，在画面中直接看见
 
-### 高清视频（Release）
-- UI 演示视频（`ui_demo.mp4`）：https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/ui_demo.mp4  
-- 示例输入视频（`video_1.mp4`）：https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/video_1.mp4  
+伸手事件确认后，对应货架区域变为青绿色，手腕附近显示人物编号与有效持续时间；右侧同步展示当前作业。手离开或关键点缺失时，提示随状态变化，避免把上一帧的动作留在画面上。
 
-（可选）部分环境支持用 HTML 内嵌视频预览：
-```html
-<video src="https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/ui_demo.mp4" controls width="100%"></video>
+![真实分析：伸手时货架高亮、手腕提示与当前作业卡片联动](assets/posture-analysis.gif)
+
+### 从事件回到原始画面
+
+筛选并选择一条作业或姿态事件，回放其发生前后各两秒的原始视频；支持暂停和时间轴定位。回放与分析分开，不会重复触发提醒或增加计数。
+
+![选择已记录事件并回放原始视频，事件计数保持不变](assets/event-replay.gif)
+
+以上动图取自新版程序对[已公开示例视频](https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/tag/v0.1.0)的实际分析与回放。动图经采样加速播放；界面通过 Qt 离屏采集，不是实时性能演示。该样例没有触发持续 10 秒提醒。录制方式见[演示说明](docs/demo.md)。
+
+<details>
+<summary>查看旧版演示</summary>
+
+![旧版姿态识别界面](assets/demo.gif)
+
+旧版保留用于版本对照，其界面用语和计数方式与新版不同。
+
+</details>
+
+## 核心功能与本次升级
+
+| 功能 | 使用方式与作用 |
+|---|---|
+| 逐人记录 | 为当前会话中的人员分配临时轨迹编号，分别记录动作；同一人双手进入同一区域合并为一次事件。 |
+| 货架区域设置 | 在视频中框定关注区域，记录手腕进入区域的作业片段；区域随视频来源保存。 |
+| 动作反馈 | 伸手确认后联动货架高亮、手腕标记和当前作业卡片；区分进入确认、有效作业、离开与关键点缺失。 |
+| 持续姿态提醒 | 按视频时间累计有效弯腰时长，达到设定时长后提醒一次；短暂关键点缺失不计入有效时长。 |
+| 不确定状态处理 | 关键点不足或几何关系无效时显示“无法判断”；长时间缺失则结束事件并记录原因。 |
+| 证据回放 | 通过事件列表定位原始视频，查看起止时间、持续时长、结束原因和关联截图。 |
+| 记录导出 | 每次分析保存独立会话，输出 CSV、JSONL、截图、输入哈希、配置与性能统计。 |
+
+这次升级将旧版的画面级计数改为逐人事件处理，并增加持续确认、角度滞回和缺失处理；桌面端与命令行共用分析核心。默认仍使用 YOLO11n-pose，旧规则作为对照模式保留。界面采用视频主视图、当前作业卡片和事件时间轴，设置与日志按需展开。货架外轮廓用于展示，伸手判定仍使用单独确认的 ROI；示例外轮廓只在视频哈希匹配时加载。完整变更见[更新记录](CHANGELOG.md)。
+
+## 快速启动
+
+**环境：Windows、Conda、Python 3.10。** 可使用 CPU；NVIDIA GPU 环境可选择 CUDA 12.8 依赖。
+
+在 Anaconda PowerShell Prompt 中执行：
+
+```powershell
+git clone https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition.git
+cd Warehouse_Shelf_Posture_Recognition
+
+# 创建独立 CPU 环境；使用 NVIDIA GPU 时将 cpu 改为 cu128
+powershell -File scripts/setup_environment.ps1 -Device cpu
+conda activate warehouse-pose
+
+python scripts/download_assets.py --model --video
+python -m src.app
 ```
 
----
+安装脚本创建名为 `warehouse-pose` 的环境；同名环境已存在时会停止，避免覆盖。CPU 使用直接依赖版本，CUDA 安装另外应用 Windows 依赖锁文件。模型与示例视频单独下载并校验 SHA256，也可在界面中选择自己的本地视频和模型。
 
-## ✨ 核心功能（Key Features）
+**操作流程：**选择视频 → 在“分析设置”中选择模型与设备 → 在“区域设置”中绘制并确认判定区域 → 开始分析 → 筛选事件并回放。
 
-### 🎯 高精度行为识别（YOLOv11 Pose）
-- 基于 **Ultralytics YOLOv11-pose** 实现人体关键点检测  
-- 实时识别：**伸手**、**弯腰** 等作业行为  
-- 可视化增强：**赛博朋克双色高亮**（青色光晕 + 黄色核心），提升现场可读性
+只分析姿态时，可以确认不使用货架区域；此时不会分析伸手事件。更换视频或机位后，需要重新核对区域位置。
 
-### 🧱 交互式电子围栏（ROI）
-- 在视频画面中 **点击 4 个点** 绘制监控区域  
-- 支持 **左 / 右货架** 监控区域（ROI）  
-- ROI 自动保存至 `data/roi_config.json`，重启不丢失
+<details>
+<summary>命令行分析、评测与输出文件</summary>
 
-### 📈 实时数据可视化（趋势 + 看板）
-- 右侧集成 **Matplotlib 动态波形图**：实时展示作业频率趋势  
-- 数据看板：在岗人数、违规计数（伸手/弯腰触发）
+```powershell
+# 不设置货架区域，仅分析姿态；CPU 可改为 cuda:0
+python -m src.cli analyze --video data/video_1.mp4 --model models/yolo11n-pose.pt --device cpu
 
-### 📸 证据留存（截图 + CSV）
-- 触发行为时自动抓拍截图：`output/images/`  
-- 自动生成带时间戳的 CSV：`output/report.csv`
+# 使用经核对的货架区域，同时分析伸手作业
+python -m src.cli analyze --video data/video_1.mp4 --roi data/roi_config.json --device cpu
 
----
+# labels.json 必须是人工核验完成、且绑定该会话的标签
+python -m src.cli evaluate --session output/sessions/SESSION_ID --labels labels.json --output output/evaluation/result
 
-## 📁 项目结构（Project Structure）
-
-```text
-Warehouse_Shelf_Posture_Recognition/
-├── src/
-│   ├── core_inference.py        # YOLO 推理与行为判定核心
-│   └── ui/
-│       ├── main_window.py       # 主界面（PySide6 / Qt）
-│       └── ai_worker.py         # 推理工作线程
-│
-├── data/
-│   └── roi_config.json          # ROI 配置（自动保存）
-│
-├── models/                      # 模型权重（不入库，通过 Release 下载）
-├── output/
-│   ├── images/                  # 行为证据截图（默认忽略追踪）
-│   └── .gitkeep
-│
-├── assets/
-│   └── demo.gif                 # UI 演示动图（README 预览）
-│
-├── scripts/
-│   └── download_assets.py       # 一键下载模型/示例视频/UI 演示视频（Release）
-│
-├── requirements.txt
-├── setup_resources.py
-├── check_env.py
-├── LICENSE
-└── README.md
+python -m pytest -q
 ```
 
----
+`data/roi_config.json` 仅对应示例视频，不能直接套用到其他场景。规则模式可通过 `--mode baseline|tracked|stable` 选择；默认参数见 [configs/default.json](configs/default.json)。
 
-## 🚀 快速开始（Quick Start）
+每个分析会话保存在 `output/sessions/<session_id>/`：
 
-### 1️⃣ 安装依赖
-```bash
-pip install -r requirements.txt
+| 文件 | 内容 |
+|---|---|
+| `events.csv` / `events.jsonl` | 事件、人物轨迹、区域、视频时间、有效时长、提醒与结束原因 |
+| `images/` | 关联事件编号的证据截图 |
+| `manifest.json` | 输入与模型哈希、配置、代码版本、环境和会话状态 |
+| `observations.jsonl` / `transitions.jsonl` | 逐帧观察与事件状态变化 |
+| `summary.json` | 事件统计、无法判断覆盖率和分阶段耗时 |
+
+</details>
+
+## 架构
+
+```mermaid
+flowchart LR
+  V[本地视频] --> P[YOLO Pose 姿态估计]
+  P --> T[ByteTrack 人员跟踪]
+  T --> R[区域与几何判断]
+  R --> S[时序事件与持续提醒]
+  S --> UI[PySide6 桌面界面]
+  S --> F[会话记录与证据]
+  F --> Q[原始视频回放]
+  F --> M[人工核验后评测]
 ```
 
-> 建议使用 **Python 3.10+**。CUDA 加速取决于你的 PyTorch 安装版本与驱动环境。
+`src/pipeline.py` 负责解码与分析，`src/rules.py` 和 `src/events.py` 负责姿态判断与事件状态，`src/storage.py` 负责留存，`src/evaluation.py` 负责评测。GUI 与 CLI 调用同一套核心；`src/feedback.py` 只读取事件状态，向界面提供动作反馈，不参与判定或计数。回放只读取原始视频。
 
-### 2️⃣ 下载模型与示例资源（Release）
-本仓库不直接提交大文件（模型权重 / 示例视频 / UI 演示视频），可一键下载：
+## 验证结果与局限
 
-```bash
-python scripts/download_assets.py --all
-```
+**工程验证：**36 项自动化测试覆盖逐人计数、持续时长边界、关键点缺失、证据写入、区域坐标、评测约束，以及动作反馈、筛选与回放状态。自动检查在 [GitHub Actions](https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/actions/workflows/tests.yml) 的 Windows CPU 环境运行。完整示例的 GUI 工作线程与 CLI 事件记录一致；本次界面升级后仍为 5 次伸手、5 次姿态候选，回放前后记录保持不变。
 
-下载完成后将生成：
-- `models/yolo11n-pose.pt`（推理权重）
-- `data/video_1.mp4`（示例输入视频，用于快速运行）
-- `output/ui_demo.mp4`（UI 演示视频，用于预览）
+**识别效果：**已运行原始规则、逐人规则、时序规则及 YOLO26 模型对照。现有素材属于同场景开发与固定回归；完整人工标签、真实长时间弯腰提醒正例和独立视频验证仍待补齐，因此暂不报告完整精确率与召回率。事件数量减少不能直接视为准确率提高。
 
-如只需要其中一类资源：
-```bash
-python scripts/download_assets.py --model
-python scripts/download_assets.py --video
-python scripts/download_assets.py --ui-demo
-```
+- 默认 **10 秒**是可配置的演示提醒时长，不是医学、人体工效或安全合规阈值。系统提供辅助复核信息，不输出违规或健康风险等级。
+- 二维姿态受机位、遮挡和透视影响，下蹲、转身可能与弯腰混淆；手腕进入区域也不等于完成取放操作。
+- 当前支持本地视频离线分析。未接入摄像头或 RTSP，尚未完成独立场景和稳定实时性能验证。
 
-### 3️⃣ 运行主程序
-```bash
-python src/ui/main_window.py
-```
+[详细验收与失败案例](docs/acceptance.md) · [标注与评测方法](docs/review_protocol.md) · [独立视频验证清单](docs/new_video_checklist.md)
 
----
+## 许可
 
-## 🧭 操作指南（Usage Guide）
-
-### ▶️ 启动与加载
-- 启动后加载默认视频（`data/video_1.mp4`）或选择自定义视频  
-- 模型与 ROI 配置自动初始化
-
-### 🖱️ 绘制电子围栏（ROI）
-1. 在视频画面中点击 **4 个点**  
-2. 完成区域绘制（左 / 右货架）  
-3. 配置自动保存到 `data/roi_config.json`
-
-### 📊 查看趋势与看板
-- 右侧波形图：作业频率趋势（实时更新）  
-- 看板：在岗人数与违规计数统计  
-- 视频画面：关键点骨架与高亮特效叠加
-
-### 🗂️ 查看证据与报表
-- 截图输出：`output/images/`  
-- 报表输出：`output/report.csv`
-
----
-
-## 🛠 技术栈（Tech Stack）
-
-- Python 3.10+
-- PySide6 (Qt for Python)
-- OpenCV
-- Ultralytics YOLOv11 (Pose)
-- Matplotlib
-- NumPy
-- NVIDIA CUDA（可选）
-
----
-
-## 📦 资源（Assets）
-
-- 模型权重（baseline）：https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/yolo11n-pose.pt  
-- 示例输入视频（运行用）：https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/video_1.mp4  
-- UI 演示视频（预览用）：https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/ui_demo.mp4  
-
----
-
-## 📄 License
-
-MIT License
-
-> 注：MIT 是开源许可协议名称（GitHub 会显示为“麻省理工学院许可”），不代表项目与任何机构存在隶属或背书关系。
+项目代码使用 [MIT License](LICENSE)。Ultralytics、模型权重与其他依赖适用各自许可证，使用时需分别核对。用于其他场景的视频素材需取得相应授权。

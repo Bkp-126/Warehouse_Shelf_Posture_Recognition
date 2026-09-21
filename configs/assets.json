@@ -1,0 +1,30 @@
+{
+  "model": {
+    "path": "models/yolo11n-pose.pt",
+    "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt",
+    "sha256": "869e83fcdffdc7371fa4e34cd8e51c838cc729571d1635e5141e3075e9319dc0",
+    "bytes": 6255593,
+    "remote_availability": "not_verified_this_run"
+  },
+  "model26": {
+    "path": "models/yolo26n-pose.pt",
+    "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt",
+    "sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+    "bytes": 7878574,
+    "remote_availability": "download_verified_this_run"
+  },
+  "video": {
+    "path": "data/video_1.mp4",
+    "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/video_1.mp4",
+    "sha256": "9a50b062eacaff7aff003106c1429c20cf074e67e7aed8ddcc735ea26a5e5949",
+    "bytes": 65548371,
+    "remote_availability": "not_verified_this_run"
+  },
+  "ui-demo": {
+    "path": "output/ui_demo.mp4",
+    "url": "https://github.com/Bkp-126/Warehouse_Shelf_Posture_Recognition/releases/download/v0.1.0/ui_demo.mp4",
+    "sha256": "b8438c0fe7e3c3d9ebb45263418ba2b919c1d1f34f5f9e2f0b293f90b1e48adb",
+    "bytes": 79616902,
+    "remote_availability": "not_verified_this_run"
+  }
+}

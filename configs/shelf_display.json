@@ -1,0 +1,12 @@
+{
+  "purpose": "Display-only manually traced shelf envelopes; never used for reach or posture decisions.",
+  "videos": {
+    "9a50b062eacaff7aff003106c1429c20cf074e67e7aed8ddcc735ea26a5e5949": {
+      "source": "Existing public video_1.mp4; visible shelf edges traced for presentation",
+      "outlines": {
+        "left": [[0.235, 0.002], [0.469, 0.002], [0.297, 0.998], [0.002, 0.998], [0.002, 0.433]],
+        "right": [[0.593, 0.002], [0.758, 0.002], [0.998, 0.315], [0.998, 0.998], [0.794, 0.998]]
+      }
+    }
+  }
+}

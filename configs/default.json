@@ -1,0 +1,6 @@
+{
+  "mode": "stable", "imgsz": 640, "detection_conf": 0.1,
+  "keypoint_conf": 0.5, "bend_on": 140.0, "bend_off": 150.0,
+  "enter_seconds": 0.3, "exit_seconds": 0.5, "missing_seconds": 0.2,
+  "alert_seconds": 10.0, "gui_fps": 10.0, "save_evidence": true
+}
