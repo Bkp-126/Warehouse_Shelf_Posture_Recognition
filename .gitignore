@@ -1,40 +1,27 @@
-# =========================
-# Python / Cache
-# =========================
 __pycache__/
 *.py[cod]
-*$py.class
-
-# =========================
-# Virtual Env
-# =========================
+.pytest_cache/
 .venv/
 venv/
-
-# =========================
-# IDE
-# =========================
 .idea/
 .vscode/
-*.swp
-
-# =========================
-# Runtime Outputs (do not commit)
-# =========================
-output/
+output/*
 !output/.gitkeep
-output/images/
-output/report.csv
-
-# =========================
-# Large Assets (do not commit)
-# =========================
 data/*.mp4
 data/*.avi
 data/*.mov
-
-# =========================
-# Model Weights (do not commit)
-# =========================
+data/roi_profiles/
 models/*.pt
 models/*.onnx
+models/*.engine
+*.download
+
+# Local analysis artifacts and private review intake
+.ruff_cache/
+runs/
+scripts/record_review_batch1.py
+*.zip
+*.log
+.env
+.env.*
+docs/review_batch1.md
