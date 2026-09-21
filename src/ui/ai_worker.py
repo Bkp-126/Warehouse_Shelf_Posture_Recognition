@@ -1,7 +1,6 @@
+import cv2
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QImage
-import cv2
-from src.pipeline import render_frame
 
 
 class AIWorker(QThread):
@@ -24,13 +23,12 @@ class AIWorker(QThread):
         if stats["time"] - self.last_emit < 1 / self.runner.settings.gui_fps:
             return
         self.last_emit = stats["time"]
-        canvas = render_frame(
-            frame, details, self.runner.rois, self.show_skeleton, self.show_angles, self.show_roi
-        )
-        rgb = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+        # The GUI paints presentation overlays in source coordinates. The shared
+        # analysis path and evidence renderer remain unchanged.
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w = rgb.shape[:2]
         q = QImage(rgb.data, w, h, rgb.strides[0], QImage.Format.Format_RGB888).copy()
-        self.frame_signal.emit(q, stats)
+        self.frame_signal.emit(q, {**stats, "people_overlay": details})
 
     def run(self):
         try:

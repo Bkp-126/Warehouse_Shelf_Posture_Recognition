@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from .config import ROOT, Settings, validate_rois
 from .events import EventMachine
+from .feedback import reach_feedback
 from .rules import observe
 from .storage import SessionStore, sha256, environment
 
@@ -329,6 +330,20 @@ class AnalysisRunner:
                             "counters": counters,
                             "timeline": timeline,
                             "rois": self.rois,
+                            "reach_feedback": reach_feedback(
+                                details,
+                                self.rois,
+                                frame.shape[1],
+                                frame.shape[0],
+                                self.settings,
+                                machine,
+                                obs,
+                            ),
+                            "active_events": [
+                                ch.event.to_dict()
+                                for ch in machine.channels.values()
+                                if ch.event is not None
+                            ],
                             "processing_started": tick,
                         },
                     )
